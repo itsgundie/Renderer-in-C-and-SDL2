@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "SDL.h"
 
@@ -37,6 +38,7 @@ extern SDL_Texture* color_buffer_texture;
 extern vec3d_t cube[NUMBER_OF_POINTS];
 extern vec2d_t cube_projected[NUMBER_OF_POINTS];
 extern vec3d_t camera_plane;
+extern vec3d_t cobe_rotation;
 
 
 void    set_me_free(void);
@@ -60,5 +62,16 @@ void    render(void);
 void    setup(void);
 
 int     main(void);
+
+
+vec3d_t vec3_rotate_x(vec3d_t vector, float angle);
+
+
+vec3d_t vec3_rotate_y(vec3d_t vector, float angle);
+
+
+vec3d_t vec3_rotate_z(vec3d_t vector, float angle);
+
+
 
 #endif

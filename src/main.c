@@ -6,6 +6,7 @@ bool            game_is_on = false;
 vec3d_t cube[NUMBER_OF_POINTS];
 vec2d_t cube_projected[NUMBER_OF_POINTS];
 vec3d_t camera_plane = { .x = 0.0f, .y = 0.0f, .z = -5.0f};
+vec3d_t cube_rotation = {0};
 
 void    input_catch(void)
 {
@@ -32,11 +33,13 @@ vec2d_t     project3to2d(vec3d_t source)
 
 void    update(void)
 {
+    cube_rotation.y += 0.01;
     for(int q = 0; q < NUMBER_OF_POINTS; q++)
     {
         vec3d_t point = cube[q];
-        point.z -= camera_plane.z;
-        vec2d_t projected_point = project3to2d(point);
+        vec3d_t transformed_point = vec3_rotate_y(point, cube_rotation.y);
+        transformed_point.z -= camera_plane.z;
+        vec2d_t projected_point = project3to2d(transformed_point);
         cube_projected[q] = projected_point;
     }
 }
