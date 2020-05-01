@@ -34,10 +34,14 @@ vec2d_t     project3to2d(vec3d_t source)
 void    update(void)
 {
     cube_rotation.y += 0.01;
+    cube_rotation.x += 0.01;
+    cube_rotation.z += 0.01;
     for(int q = 0; q < NUMBER_OF_POINTS; q++)
     {
         vec3d_t point = cube[q];
         vec3d_t transformed_point = vec3_rotate_y(point, cube_rotation.y);
+        transformed_point = vec3_rotate_x(transformed_point, cube_rotation.x);
+        transformed_point = vec3_rotate_z(transformed_point, cube_rotation.z);
         transformed_point.z -= camera_plane.z;
         vec2d_t projected_point = project3to2d(transformed_point);
         cube_projected[q] = projected_point;
