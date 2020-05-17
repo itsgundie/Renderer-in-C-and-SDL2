@@ -45,7 +45,32 @@ void    draw_rect(int x, int y, int width, int height, uint32_t color)
 	return ;
 }
 
+void	draw_line(int x0, int y0, int x1, int y1, uint32_t color)
+{
+	int delta_x = (x1 - x0);
+	int delta_y = (y1 - y0);
 
+	int longest_side_length = (abs(delta_x) >= abs(delta_y)) ? abs(delta_x) : abs(delta_y);
+
+	float step_x = delta_x / (float)(longest_side_length);
+	float step_y = delta_y / (float)(longest_side_length);
+
+	float this_x = x0;
+	float this_y = y0;
+	for (int q = 0; q <= longest_side_length; q++)
+	{
+		draw_pixel((int)this_x, (int)this_y, color);
+		this_x += step_x;
+		this_y += step_y;
+	}
+}
+
+void	draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
+{	
+	draw_line(x0, y0, x1, y1, color);
+	draw_line(x1, y1, x2, y2, color);
+	draw_line(x2, y2, x0, y0, color);
+}
 
 void    render(void)
 {
@@ -56,7 +81,21 @@ void    render(void)
 		draw_rect(triangle.points[0].x , triangle.points[0].y, 4, 4, 0xBBBBBBFF);
 		draw_rect(triangle.points[1].x , triangle.points[1].y, 4, 4, 0xBBBBBBFF);
 		draw_rect(triangle.points[2].x , triangle.points[2].y, 4, 4, 0xBBBBBBFF);
+		draw_triangle(
+		triangle.points[0].x,
+		triangle.points[0].y,
+		triangle.points[1].x,
+		triangle.points[1].y,
+		triangle.points[2].x,
+		triangle.points[2].y,
+		0xFF00FF00
+	);
 	}
+	// draw_line(100, 200, 300, 50, 0xFF00FF00);
+	// draw_line(300, 50, 400, 600, 0xFF00FF00);
+	// draw_line(400, 600, 500, 700, 0xFF00FF00);
+	// draw_line(500, 700, 250, 350, 0xFF00FF00);
+
 	
 	// draw_rect(66, 77, 128, 256, 0x0099FFFF);
 	// for(int q = 0; q < 100; q++)

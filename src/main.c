@@ -1,7 +1,7 @@
 
 #include "render.h"
 
-float FOV = 1280;
+float FOV = 640;
 bool            game_is_on = false;
 vec3d_t cube[NUMBER_OF_POINTS];
 vec2d_t cube_projected[NUMBER_OF_POINTS];
@@ -9,7 +9,7 @@ vec3d_t camera_plane = { .x = 0.0f, .y = 0.0f, .z = -5.0f};
 vec3d_t cube_rotation = {0};
 int prev_frame_time = 0;
 
-triangle_t triangles_to_render[NUM_OF_MESH_FACES];
+triangle_t* triangles_to_render = NULL;
 
 vec3d_t mesh_vertices[NUM_OF_MESH_VERTS] = {
     { .x = -1,  .y = -1,    .z = -1},
