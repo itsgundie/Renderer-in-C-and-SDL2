@@ -75,7 +75,8 @@ void	draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t colo
 void    render(void)
 {
 	draw_grid();
-	for(int q = 0; q < NUM_OF_MESH_FACES; q++)
+	int num_triangles = array_length(triangles_to_render);
+	for(int q = 0; q < num_triangles; q++)
 	{
 		triangle_t triangle = triangles_to_render[q];
 		draw_rect(triangle.points[0].x , triangle.points[0].y, 4, 4, 0xBBBBBBFF);
@@ -96,7 +97,8 @@ void    render(void)
 	// draw_line(400, 600, 500, 700, 0xFF00FF00);
 	// draw_line(500, 700, 250, 350, 0xFF00FF00);
 
-	
+	array_free(triangles_to_render);
+
 	// draw_rect(66, 77, 128, 256, 0x0099FFFF);
 	// for(int q = 0; q < 100; q++)
 	// {

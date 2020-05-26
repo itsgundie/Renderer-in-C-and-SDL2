@@ -6,12 +6,18 @@ bool            game_is_on = false;
 vec3d_t cube[NUMBER_OF_POINTS];
 vec2d_t cube_projected[NUMBER_OF_POINTS];
 vec3d_t camera_plane = { .x = 0.0f, .y = 0.0f, .z = -5.0f};
-vec3d_t cube_rotation = {0};
+//vec3d_t cube_rotation = {0};
 int prev_frame_time = 0;
 
 triangle_t* triangles_to_render = NULL;
 
-vec3d_t mesh_vertices[NUM_OF_MESH_VERTS] = {
+mesh_t  mesh = {
+    .vertices = NULL,
+    .faces = NULL,
+    .rotation = { 0, 0, 0}
+};
+
+vec3d_t cube_vertices[NUM_CUBE_VERTS] = {
     { .x = -1,  .y = -1,    .z = -1},
     { .x = -1,  .y =  1,    .z = -1},
     { .x =  1,  .y =  1,    .z = -1},
@@ -22,7 +28,7 @@ vec3d_t mesh_vertices[NUM_OF_MESH_VERTS] = {
     { .x = -1,  .y = -1,    .z =  1}
 };
 
-face_mesh_t mesh_faces[NUM_OF_MESH_FACES] = {
+face_mesh_t cube_faces[NUM_CUBE_FACES] = {
     // front
     { .a = 1, .b = 2, .c = 3 },
     { .a = 1, .b = 3, .c = 4 },
@@ -42,6 +48,21 @@ face_mesh_t mesh_faces[NUM_OF_MESH_FACES] = {
     { .a = 6, .b = 8, .c = 1 },
     { .a = 6, .b = 1, .c = 4 }
 };
+
+
+void    load_cube_mesh(void)
+{
+    for( int j = 0; j < NUM_CUBE_VERTS; j++)
+    {
+        vec3d_t cube_vert = cube_vertices[j];
+        array_push(mesh.vertices, cube_vert);
+    }
+    for ( int k = 0; k < NUM_CUBE_FACES; k++)
+    {
+        face_mesh_t cube_face = cube_faces[k];
+        array_push(mesh.faces, cube_face);
+    }
+}
 
 void    input_catch(void)
 {
@@ -78,26 +99,29 @@ void    update(void)
     
     prev_frame_time = SDL_GetTicks();
 
-    cube_rotation.y += 0.01;
-    cube_rotation.x += 0.01;
-    cube_rotation.z += 0.01;
+    triangles_to_render = NULL;
 
-    for(int j = 0; j < NUM_OF_MESH_FACES; j++)
+    mesh.rotation.y += 0.01;
+    mesh.rotation.x += 0.01;
+    mesh.rotation.z += 0.01;
+
+    int num_faces = array_length(mesh.faces);
+    for(int j = 0; j < num_faces; j++)
     {
-        face_mesh_t this_face = mesh_faces[j];
+        face_mesh_t this_face = mesh.faces[j];
         vec3d_t this_face_vertices[3];
-        this_face_vertices[0] = mesh_vertices[this_face.a - 1];
-        this_face_vertices[1] = mesh_vertices[this_face.b - 1];
-        this_face_vertices[2] = mesh_vertices[this_face.c - 1];
+        this_face_vertices[0] = mesh.vertices[this_face.a - 1];
+        this_face_vertices[1] = mesh.vertices[this_face.b - 1];
+        this_face_vertices[2] = mesh.vertices[this_face.c - 1];
 
         triangle_t projected_triangle;
 
         for(int k = 0; k < 3; k++)
         {
             vec3d_t transformed_vertex = this_face_vertices[k];
-            transformed_vertex = vec3_rotate_x(transformed_vertex, cube_rotation.x);
-            transformed_vertex = vec3_rotate_y(transformed_vertex, cube_rotation.y);
-            transformed_vertex = vec3_rotate_z(transformed_vertex, cube_rotation.z);
+            transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
+            transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
+            transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
         
             transformed_vertex.z -= camera_plane.z;
 
@@ -108,7 +132,8 @@ void    update(void)
 
             projected_triangle.points[k] = projected_point;
         }
-        triangles_to_render[j] = projected_triangle;
+    //    triangles_to_render[j] = projected_triangle;
+        array_push(triangles_to_render, projected_triangle);
     }
     
 }
@@ -142,6 +167,7 @@ void    setup(void)
         }
 
     }
+    load_cube_mesh();
 }
 
 
@@ -155,5 +181,6 @@ int     main(void)
         update();
         render();
     }
+    set_me_free();
     return(0);
 }

@@ -5,6 +5,8 @@
 void    set_me_free(void)
 {
     free(color_buffer);
+    array_free(mesh.faces);
+    array_free(mesh.vertices);
     SDL_DestroyRenderer(game_render);
     SDL_DestroyWindow(game_win);
     SDL_Quit();

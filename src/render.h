@@ -10,13 +10,13 @@
 #include <math.h>
 
 #include "SDL.h"
-#include "arrays.h"
+#include "array.h"
 
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
 #define NUMBER_OF_POINTS (10 * 10 * 10)
-#define NUM_OF_MESH_VERTS 8
-#define NUM_OF_MESH_FACES (6 * 2)
+#define NUM_CUBE_VERTS 8
+#define NUM_CUBE_FACES (6 * 2)
 
 
 
@@ -45,6 +45,13 @@ typedef struct	s_triangle
 		vec2d_t points[3];
 }               triangle_t;
 
+typedef struct		s_mesh
+{
+	vec3d_t*		vertices;
+	face_mesh_t*	faces;
+	vec3d_t			rotation;
+}					mesh_t;
+
 extern unsigned int    win_width;
 extern unsigned int    win_height;
 extern bool            game_is_on;
@@ -55,11 +62,12 @@ extern SDL_Texture* color_buffer_texture;
 extern vec3d_t cube[NUMBER_OF_POINTS];
 extern vec2d_t cube_projected[NUMBER_OF_POINTS];
 extern vec3d_t camera_plane;
-extern vec3d_t cobe_rotation;
+extern vec3d_t cube_rotation;
 extern int prev_frame_time;
-extern vec3d_t mesh_vertices[NUM_OF_MESH_VERTS];
-extern face_mesh_t mesh_faces[NUM_OF_MESH_FACES];
-extern triangle_t triangles_to_render[NUM_OF_MESH_FACES];
+extern vec3d_t cube_vertices[NUM_CUBE_VERTS];
+extern face_mesh_t cube_faces[NUM_CUBE_FACES];
+extern triangle_t* triangles_to_render;
+extern mesh_t mesh;
 
 void    set_me_free(void);
 
