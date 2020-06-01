@@ -19,6 +19,12 @@
 #define NUM_CUBE_FACES (6 * 2)
 
 
+#define OBJ_1 ./assets/
+
+#define MODEL_OBJ OBJ_1
+#define LINE_SIZE 1024
+
+
 
 typedef struct s_vec2d
 {
@@ -100,6 +106,6 @@ vec3d_t vec3_rotate_y(vec3d_t vector, float angle);
 
 vec3d_t vec3_rotate_z(vec3d_t vector, float angle);
 
-
+void    load_obj_file_data(char *filename);
 
 #endif
