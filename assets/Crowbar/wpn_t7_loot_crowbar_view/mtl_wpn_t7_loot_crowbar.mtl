@@ -1,0 +1,8 @@
+newmtl mtl_wpn_t7_loot_crowbar
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Ks 0.50 0.50 0.50
+map_Kd ..\\_images\\i_wpn_t7_loot_crowbar_c.tga
+map_bump ..\\_images\\i_attach_t7_lmg_brm_detail1_n.tga
+map_Ks ..\\_images\\i_wpn_t7_loot_crowbar_s.tga

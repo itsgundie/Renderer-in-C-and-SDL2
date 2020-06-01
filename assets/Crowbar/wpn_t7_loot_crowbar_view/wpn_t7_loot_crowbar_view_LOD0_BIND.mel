@@ -1,0 +1,65 @@
+/*
+* Advanced weighting script X
+* Wraith - Game extraction tools
+*/
+
+global proc WraithMesh_ad8bab3b_00_BindFunc()
+{
+   select -r WraithMesh_ad8bab3b_00;
+   select -add tag_weapon;
+   newSkinCluster "-toSelectedBones -mi 30 -omi true -dr 5.0 -rui false";   string $clu = findRelatedSkinCluster("WraithMesh_ad8bab3b_00");
+
+   skinPercent -tv tag_weapon 1.0 $clu WraithMesh_ad8bab3b_00.vtx[0:505];
+}
+
+global proc WraithMesh_ad8bab3b_01_BindFunc()
+{
+   select -r WraithMesh_ad8bab3b_01;
+   select -add tag_weapon;
+   newSkinCluster "-toSelectedBones -mi 30 -omi true -dr 5.0 -rui false";   string $clu = findRelatedSkinCluster("WraithMesh_ad8bab3b_01");
+
+   skinPercent -tv tag_weapon 1.0 $clu WraithMesh_ad8bab3b_01.vtx[0:201];
+}
+
+global proc WraithMesh_ad8bab3b_02_BindFunc()
+{
+   select -r WraithMesh_ad8bab3b_02;
+   select -add tag_weapon;
+   newSkinCluster "-toSelectedBones -mi 30 -omi true -dr 5.0 -rui false";   string $clu = findRelatedSkinCluster("WraithMesh_ad8bab3b_02");
+
+   skinPercent -tv tag_weapon 1.0 $clu WraithMesh_ad8bab3b_02.vtx[0:201];
+}
+
+global proc WraithMesh_ad8bab3b_03_BindFunc()
+{
+   select -r WraithMesh_ad8bab3b_03;
+   select -add tag_weapon;
+   newSkinCluster "-toSelectedBones -mi 30 -omi true -dr 5.0 -rui false";   string $clu = findRelatedSkinCluster("WraithMesh_ad8bab3b_03");
+
+   skinPercent -tv tag_weapon 1.0 $clu WraithMesh_ad8bab3b_03.vtx[0:629];
+}
+
+global proc RunAdvancedScript()
+{
+   catch(WraithMesh_ad8bab3b_00_BindFunc());
+   catch(WraithMesh_ad8bab3b_01_BindFunc());
+   catch(WraithMesh_ad8bab3b_02_BindFunc());
+   catch(WraithMesh_ad8bab3b_03_BindFunc());
+}
+
+global proc NamespacePurge()
+{
+   string $allNodes[] = `ls`;
+   for($node in $allNodes) {
+      string $buffer[];
+      tokenize $node ":" $buffer;
+      string $newName = $buffer[size($buffer)-1];
+       catchQuiet(`rename $node $newName`);
+   }
+}
+
+print("Currently binding the current model, please wait...\n");
+NamespacePurge();
+RunAdvancedScript();
+print("The model has been binded.\n");
+
