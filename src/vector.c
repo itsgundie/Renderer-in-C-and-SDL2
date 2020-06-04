@@ -1,5 +1,102 @@
-
+#include "array.h"
 #include "render.h"
+#include "mesh.h"
+#include "vector.h"
+#include "triangle.h"
+
+float		vec2d_length(vec2d_t vector)
+{
+  return(sqrt(vector.x * vector.x 
+              + vector.y * vector.y));
+}
+
+float		vec3d_length(vec3d_t vector)
+{
+  return(sqrt(vector.x * vector.x 
+              + vector.y * vector.y 
+              + vector.z * vector.z));
+}
+
+
+vec2d_t		vec2d_add(vec2d_t a, vec2d_t b)
+{
+    vec2d_t result = {
+      .x = a.x + b.x,
+      .y = a.y + b.y
+    };
+  return(result);
+}
+
+
+vec3d_t		vec3d_add(vec3d_t a, vec3d_t b)
+{
+    vec3d_t result = {
+      .x = a.x + b.x,
+      .y = a.y + b.y,
+      .z = a.z + b.z
+    };
+  return(result);
+}
+
+vec2d_t		vec2d_sub(vec2d_t a, vec2d_t b)
+{
+    vec2d_t result = {
+      .x = a.x - b.x,
+      .y = a.y - b.y
+    };
+  return(result);
+}
+
+
+vec3d_t		vec3d_sub(vec3d_t a, vec3d_t b)
+{
+    vec3d_t result = {
+      .x = a.x - b.x,
+      .y = a.y - b.y,
+      .z = a.z - b.z
+    };
+  return(result);
+}
+
+
+vec2d_t		vec2d_mul(vec2d_t vec, float factor)
+{
+    vec2d_t result = {
+      .x = vec.x * factor,
+      .y = vec.y * factor
+    };
+    return(result);
+}
+
+vec3d_t		vec3d_mul(vec3d_t vec, float factor)
+{
+    vec3d_t result = {
+      .x = vec.x * factor,
+      .y = vec.y * factor,
+      .z = vec.z * factor
+    };
+    return(result);
+}
+
+vec2d_t		vec2d_div(vec2d_t vec, float factor)
+{
+    vec2d_t result = {
+      .x = vec.x / factor,
+      .y = vec.y / factor
+    };
+    return(result);
+}
+
+vec3d_t		vec3d_div(vec3d_t vec, float factor)
+{
+    vec3d_t result = {
+      .x = vec.x / factor,
+      .y = vec.y / factor,
+      .z = vec.z / factor
+    };
+    return(result);
+}
+
 
 vec3d_t vec3_rotate_x(vec3d_t vector, float angle)
 {

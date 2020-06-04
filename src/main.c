@@ -1,83 +1,34 @@
-
+#include "array.h"
 #include "render.h"
+#include "mesh.h"
+#include "vector.h"
+#include "triangle.h"
+#include "array.h"
 
-float FOV = 640;
-bool            game_is_on = false;
-vec3d_t cube[NUMBER_OF_POINTS];
-vec2d_t cube_projected[NUMBER_OF_POINTS];
-vec3d_t camera_plane = { .x = 0.0f, .y = 0.0f, .z = -5.0f};
-//vec3d_t cube_rotation = {0};
+triangle_t	*triangles_to_render = NULL;
+bool	game_is_on = false;
 int prev_frame_time = 0;
+vec3d_t camera_plane = { .x = 0.0f, .y = 0.0f, .z = -5.0f};
 
-triangle_t* triangles_to_render = NULL;
-
-mesh_t  mesh = {
-	.vertices = NULL,
-	.faces = NULL,
-	.rotation = { 0, 0, 0}
-};
-
-vec3d_t cube_vertices[NUM_CUBE_VERTS] = {
-	{ .x = -1,  .y = -1,    .z = -1},
-	{ .x = -1,  .y =  1,    .z = -1},
-	{ .x =  1,  .y =  1,    .z = -1},
-	{ .x =  1,  .y = -1,    .z = -1},
-	{ .x =  1,  .y =  1,    .z =  1},
-	{ .x =  1,  .y = -1,    .z =  1},
-	{ .x = -1,  .y =  1,    .z =  1},
-	{ .x = -1,  .y = -1,    .z =  1}
-};
-
-face_mesh_t cube_faces[NUM_CUBE_FACES] = {
-	// front
-	{ .a = 1, .b = 2, .c = 3 },
-	{ .a = 1, .b = 3, .c = 4 },
-	// right
-	{ .a = 4, .b = 3, .c = 5 },
-	{ .a = 4, .b = 5, .c = 6 },
-	// back
-	{ .a = 6, .b = 5, .c = 7 },
-	{ .a = 6, .b = 7, .c = 8 },
-	// left
-	{ .a = 8, .b = 7, .c = 2 },
-	{ .a = 8, .b = 2, .c = 1 },
-	// top
-	{ .a = 2, .b = 7, .c = 5 },
-	{ .a = 2, .b = 5, .c = 3 },
-	// bottom
-	{ .a = 6, .b = 8, .c = 1 },
-	{ .a = 6, .b = 1, .c = 4 }
-};
-
-
-void    load_cube_mesh(void)
+void    setup(void)
 {
-	for( int j = 0; j < NUM_CUBE_VERTS; j++)
-	{
-		vec3d_t cube_vert = cube_vertices[j];
-		array_push(mesh.vertices, cube_vert);
-	}
-	for ( int k = 0; k < NUM_CUBE_FACES; k++)
-	{
-		face_mesh_t cube_face = cube_faces[k];
-		array_push(mesh.faces, cube_face);
-	}
+	color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * win_width * win_height);
+	color_buffer_texture = SDL_CreateTexture(
+							game_render, 
+							SDL_PIXELFORMAT_RGBA8888,
+							SDL_TEXTUREACCESS_STREAMING,
+							win_width,
+							win_height);
+	load_obj_file_data(MODEL_OBJ);
+	vec3d_t a = { .x = -4.6f, .y = 1.9f, .z = -9.99f};
+	vec3d_t b = { .x = 14.7f, .y = -11.77f, .z = 45.67f};
+
+	float a_length = vec3d_length(a);
+	float b_length = vec3d_length(b);
+
+	printf("Length A - %f and B - %f\n", a_length, b_length);
+
 }
-
-void    load_obj_file_data(char *filename)
-{
-	FILE *file;
-	file = fopen(filename, "r");
-
-	char line[LINE_SIZE] = {0};
-
-	while (get_line(line, LINE_SIZE, file))
-	{
-		printf("LINE:\n%s", line);
-	}
-}
-
-
 
 void    input_catch(void)
 {
@@ -117,7 +68,7 @@ void    update(void)
 	triangles_to_render = NULL;
 
 	mesh.rotation.y += 0.01;
-	mesh.rotation.x += 0.01;
+	mesh.rotation.x += 0.0;
 	mesh.rotation.z += 0.01;
 
 	int num_faces = array_length(mesh.faces);
@@ -125,6 +76,7 @@ void    update(void)
 	{
 		face_mesh_t this_face = mesh.faces[j];
 		vec3d_t this_face_vertices[3];
+
 		this_face_vertices[0] = mesh.vertices[this_face.a - 1];
 		this_face_vertices[1] = mesh.vertices[this_face.b - 1];
 		this_face_vertices[2] = mesh.vertices[this_face.c - 1];
@@ -147,34 +99,32 @@ void    update(void)
 
 			projected_triangle.points[k] = projected_point;
 		}
-	//    triangles_to_render[j] = projected_triangle;
 		array_push(triangles_to_render, projected_triangle);
 	}
 	
 }
 
-
-void    setup(void)
+void    render(void)
 {
-	color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * win_width * win_height);
-	color_buffer_texture = SDL_CreateTexture(game_render, SDL_PIXELFORMAT_RGBA8888,
-								 SDL_TEXTUREACCESS_STREAMING, win_width, win_height);
-	int point_index = 0;
-	for(float x = -1.0f; x <= 1.0f; x += 0.25)
+	draw_grid();
+	int num_triangles = array_length(triangles_to_render);
+	for(int q = 0; q < num_triangles; q++)
 	{
-		for(float y = -1.0f; y <= 1.0f; y += 0.25)
-		{
-			for(float z = -1.0f; z <= 1.0f; z += 0.25)
-			{
-				vec3d_t this_point = {.x = x, .y = y, .z = z};
-				cube[point_index++] = this_point;
-			}
-		}
-
+		triangle_t triangle = triangles_to_render[q];
+		draw_rect(triangle.points[0].x , triangle.points[0].y, 4, 4, 0xBBBBBBFF);
+		draw_rect(triangle.points[1].x , triangle.points[1].y, 4, 4, 0xBBBBBBFF);
+		draw_rect(triangle.points[2].x , triangle.points[2].y, 4, 4, 0xBBBBBBFF);
+		draw_triangle(
+			triangle.points[0].x, triangle.points[0].y,
+			triangle.points[1].x, triangle.points[1].y,
+			triangle.points[2].x, triangle.points[2].y,
+			0xFF00FF00);
 	}
-	load_obj_file_data("OBJ_FILE");
+	array_free(triangles_to_render);
+	render_color_buffer();
+	clear_color_buffer(0x000000FF);
+	SDL_RenderPresent(game_render);
 }
-
 
 int     main(void)
 {

@@ -9,54 +9,32 @@
 #include <stdbool.h>
 #include <math.h>
 
-#include "SDL.h"
+#include "../SDL/inc/SDL.h"
 #include "array.h"
+#include "vector.h"
+#include "triangle.h"
+#include "mesh.h"
 
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
 #define NUMBER_OF_POINTS (10 * 10 * 10)
-#define NUM_CUBE_VERTS 8
-#define NUM_CUBE_FACES (6 * 2)
 
+#define OBJ_1 "./assets/teapot.obj"
+#define OBJ_2 "./assets/Axe.obj"
+#define OBJ_3 "./assets/Hammer.obj"
+#define OBJ_4 "./assets/PPSH.obj"
+#define OBJ_5 "./assets/crowbar.obj"
+#define OBJ_6 "./assets/plain_doll.obj"
+#define OBJ_7 "./assets/lady maria.obj"
+#define OBJ_8 "./assets/gehrman.obj"
+#define OBJ_9 "./assets/f22.obj"
+#define OBJ_0 "./assets/cube.obj"
 
-#define OBJ_1 ./assets/
+#define	MODEL_OBJ OBJ_1
+#define	LINE_SIZE 1024
 
-#define MODEL_OBJ OBJ_1
-#define LINE_SIZE 1024
+#define FOV	640.0f
 
-
-
-typedef struct s_vec2d
-{
-		float x;
-		float y;
-}               vec2d_t;
-
-typedef struct s_vec3d
-{
-				float x;
-				float y;
-				float z;
-}               vec3d_t;
-
-typedef struct	s_face_mesh
-{
-		int a;
-		int b;
-		int c;
-}				face_mesh_t;
-
-typedef struct	s_triangle
-{
-		vec2d_t points[3];
-}               triangle_t;
-
-typedef struct		s_mesh
-{
-	vec3d_t*		vertices;
-	face_mesh_t*	faces;
-	vec3d_t			rotation;
-}					mesh_t;
 
 extern unsigned int    win_width;
 extern unsigned int    win_height;
@@ -70,10 +48,8 @@ extern vec2d_t cube_projected[NUMBER_OF_POINTS];
 extern vec3d_t camera_plane;
 extern vec3d_t cube_rotation;
 extern int prev_frame_time;
-extern vec3d_t cube_vertices[NUM_CUBE_VERTS];
-extern face_mesh_t cube_faces[NUM_CUBE_FACES];
 extern triangle_t* triangles_to_render;
-extern mesh_t mesh;
+
 
 void    set_me_free(void);
 
@@ -91,21 +67,15 @@ void    draw_grid(void);
 
 void    draw_rect(int x, int y, int width, int height, uint32_t color);
 
+void	draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
+
 void    render(void);
 
 void    setup(void);
 
 int     main(void);
 
+vec2d_t     project3to2d(vec3d_t source);
 
-vec3d_t vec3_rotate_x(vec3d_t vector, float angle);
-
-
-vec3d_t vec3_rotate_y(vec3d_t vector, float angle);
-
-
-vec3d_t vec3_rotate_z(vec3d_t vector, float angle);
-
-void    load_obj_file_data(char *filename);
 
 #endif

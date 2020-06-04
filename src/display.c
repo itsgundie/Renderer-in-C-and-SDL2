@@ -1,48 +1,60 @@
 
 #include "render.h"
 
+
+SDL_Window		*game_win = NULL;
+SDL_Renderer	*game_render = NULL;
+uint32_t		*color_buffer = NULL;
+SDL_Texture		*color_buffer_texture = NULL;
+
 unsigned int    win_width = 320;
 unsigned int    win_height = 240;
-SDL_Window *    game_win = NULL;
-SDL_Renderer*   game_render = NULL;
-uint32_t*       color_buffer = NULL;
-SDL_Texture* color_buffer_texture = NULL;
 
 
-void    clear_color_buffer(uint32_t color)
+bool    init_window(void)
 {
-	for (int q = 0; q < (win_width * win_height); q++)
-		color_buffer[q] = color;
+    if(SDL_Init(SDL_INIT_EVERYTHING) != 0)
+    {
+        fprintf(stderr, "SDL Initialization Error\n");
+        return (false);
+    }
+
+    SDL_DisplayMode display_mode;
+    SDL_GetCurrentDisplayMode(0,&display_mode);
+    win_width = display_mode.w;
+    win_height = display_mode.h;
+    game_win = SDL_CreateWindow(NULL, 
+                SDL_WINDOWPOS_CENTERED, 
+                SDL_WINDOWPOS_CENTERED,
+                win_width, 
+                win_height, 
+                SDL_WINDOW_BORDERLESS);
+    if(!game_win)
+    {
+        fprintf(stderr, "Error Creating Window\n");
+        return(false);
+    }
+    game_render = SDL_CreateRenderer(game_win, -1, 0);
+    if(!game_render)
+    {
+        fprintf(stderr, "SDL Render Initialization Error\n");
+        return(false);
+    }
+    return (true);
 }
 
 
-void    render_color_buffer(void)
+void    draw_grid(void)
 {
-	SDL_UpdateTexture(color_buffer_texture, NULL, color_buffer, (int)(win_width * sizeof(uint32_t)));
-	SDL_RenderCopy(game_render, color_buffer_texture, NULL, NULL);
+   for(int y = 0; y < win_height; y += 10)
+	for(int x = 0; x < win_width; x += 10)
+		color_buffer[(win_width * y) + x] = 0x222222FF;
 }
 
 void    draw_pixel(int x, int y, uint32_t color)
 {
 	if (x >= 0 && x < win_width && y >= 0 && y < win_height)
 		color_buffer[(win_width * y) + x] = color;
-}
-
-void    draw_grid(void)
-{
-   for(int y = 0; y <= win_height; y += 10)
-	for(int x = 0; x <= win_width; x += 10)
-		color_buffer[(win_width * y) + x] = 0x222222FF;
-   return ;
-}
-
-void    draw_rect(int x, int y, int width, int height, uint32_t color)
-{
-	for(int row = y; row < (y + height); row++)
-		for(int col = x; col < (x + width); col++)
-			draw_pixel(col, row, color);
-			//color_buffer[(win_width * row) + col] = color;
-	return ;
 }
 
 void	draw_line(int x0, int y0, int x1, int y1, uint32_t color)
@@ -72,40 +84,33 @@ void	draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t colo
 	draw_line(x2, y2, x0, y0, color);
 }
 
-void    render(void)
+void    draw_rect(int x, int y, int width, int height, uint32_t color)
 {
-	draw_grid();
-	int num_triangles = array_length(triangles_to_render);
-	for(int q = 0; q < num_triangles; q++)
-	{
-		triangle_t triangle = triangles_to_render[q];
-		draw_rect(triangle.points[0].x , triangle.points[0].y, 4, 4, 0xBBBBBBFF);
-		draw_rect(triangle.points[1].x , triangle.points[1].y, 4, 4, 0xBBBBBBFF);
-		draw_rect(triangle.points[2].x , triangle.points[2].y, 4, 4, 0xBBBBBBFF);
-		draw_triangle(
-		triangle.points[0].x,
-		triangle.points[0].y,
-		triangle.points[1].x,
-		triangle.points[1].y,
-		triangle.points[2].x,
-		triangle.points[2].y,
-		0xFF00FF00
-	);
-	}
-	// draw_line(100, 200, 300, 50, 0xFF00FF00);
-	// draw_line(300, 50, 400, 600, 0xFF00FF00);
-	// draw_line(400, 600, 500, 700, 0xFF00FF00);
-	// draw_line(500, 700, 250, 350, 0xFF00FF00);
-
-	array_free(triangles_to_render);
-
-	// draw_rect(66, 77, 128, 256, 0x0099FFFF);
-	// for(int q = 0; q < 100; q++)
-	// {
-	//     draw_pixel(42 + q, 42 + q, 0x336699BB);
-	// }
-	render_color_buffer();
-	clear_color_buffer(0x000000FF);
-	SDL_RenderPresent(game_render);
+	for(int row = y; row < (y + height); row++)
+		for(int col = x; col < (x + width); col++)
+			draw_pixel(col, row, color);
+			//color_buffer[(win_width * row) + col] = color;
+	return ;
 }
 
+void    render_color_buffer(void)
+{
+	SDL_UpdateTexture(color_buffer_texture, NULL, color_buffer, (int)(win_width * sizeof(uint32_t)));
+	SDL_RenderCopy(game_render, color_buffer_texture, NULL, NULL);
+}
+
+void    clear_color_buffer(uint32_t color)
+{
+	for (int q = 0; q < (win_width * win_height); q++)
+		color_buffer[q] = color;
+}
+
+void    set_me_free(void)
+{
+    free(color_buffer);
+    array_free(mesh.faces);
+    array_free(mesh.vertices);
+    SDL_DestroyRenderer(game_render);
+    SDL_DestroyWindow(game_win);
+    SDL_Quit();
+}
