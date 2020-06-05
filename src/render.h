@@ -30,7 +30,7 @@
 #define OBJ_9 "./assets/f22.obj"
 #define OBJ_0 "./assets/cube.obj"
 
-#define	MODEL_OBJ OBJ_1
+#define	MODEL_OBJ OBJ_9
 #define	LINE_SIZE 1024
 
 #define FOV	640.0f

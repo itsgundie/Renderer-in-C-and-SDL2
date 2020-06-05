@@ -34,7 +34,15 @@ vec2d_t		vec2d_div(vec2d_t vec, float factor);
 
 vec3d_t		vec3d_div(vec3d_t vec, float factor);
 
-vec3d_t		vec3d_cross(vec3d_t vec_a, vec3d_t vec_b);
+float		vec2d_dot(vec2d_t a, vec2d_t b);
+
+float		vec3d_dot(vec3d_t a, vec3d_t b);
+
+vec3d_t		vec3d_cross(vec3d_t a, vec3d_t b);
+
+void		vec2d_normalize(vec2d_t *vector);
+
+void		vec3d_normalize(vec3d_t *vector);
 
 vec3d_t		vec3_rotate_x(vec3d_t vector, float angle);
 

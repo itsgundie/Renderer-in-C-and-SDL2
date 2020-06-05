@@ -8,7 +8,7 @@
 triangle_t	*triangles_to_render = NULL;
 bool	game_is_on = false;
 int prev_frame_time = 0;
-vec3d_t camera_plane = { .x = 0.0f, .y = 0.0f, .z = -5.0f};
+vec3d_t camera_plane = {0};
 
 void    setup(void)
 {
@@ -83,6 +83,8 @@ void    update(void)
 
 		triangle_t projected_triangle;
 
+		vec3d_t transformed_vertices[3] = {0};
+
 		for(int k = 0; k < 3; k++)
 		{
 			vec3d_t transformed_vertex = this_face_vertices[k];
@@ -90,14 +92,40 @@ void    update(void)
 			transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
 			transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
 		
-			transformed_vertex.z -= camera_plane.z;
+			transformed_vertex.z -= 5;
 
-			vec2d_t projected_point = project3to2d(transformed_vertex);
+			transformed_vertices[k] = transformed_vertex;
+		}
+
+		vec3d_t vec_a = transformed_vertices[0];
+		vec3d_t vec_b = transformed_vertices[1];
+		vec3d_t vec_c = transformed_vertices[2];
+
+		vec3d_t vec_ab = vec3d_sub(vec_b, vec_a);
+		vec3d_t vec_ac = vec3d_sub(vec_c, vec_a);
+
+		vec3d_normalize(&vec_ab);
+		vec3d_normalize(&vec_ac);
+
+		vec3d_t normal = vec3d_cross(vec_ab, vec_ac);
+
+		vec3d_normalize(&normal);
+
+		vec3d_t camera_ray = vec3d_sub(camera_plane, vec_a);
+
+		float is_visible = vec3d_dot(normal, camera_ray);
+
+		if (is_visible < 0)
+			continue;
+
+		for(int l = 0; l < 3; l++)
+		{
+			vec2d_t projected_point = project3to2d(transformed_vertices[l]);
 
 			projected_point.x += (win_width / 2);
 			projected_point.y += (win_height / 2);
 
-			projected_triangle.points[k] = projected_point;
+			projected_triangle.points[l] = projected_point;
 		}
 		array_push(triangles_to_render, projected_triangle);
 	}
