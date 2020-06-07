@@ -12,6 +12,9 @@ vec3d_t camera_plane = {0};
 
 void    setup(void)
 {
+	render_method_e = RENDER_WIRE;
+	cull_method_e = CULL_BACKFACE;
+
 	color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * win_width * win_height);
 	color_buffer_texture = SDL_CreateTexture(
 							game_render, 
@@ -43,6 +46,18 @@ void    input_catch(void)
 		case SDL_KEYDOWN:
 			if(eve.key.keysym.sym == SDLK_ESCAPE)
 				game_is_on = false;
+			if (eve.key.keysym.sym == SDLK_1)
+				render_method_e = RENDER_WIRE;
+			if (eve.key.keysym.sym == SDLK_1)
+				render_method_e = RENDER_WIRE_VERTEX;
+			if (eve.key.keysym.sym == SDLK_1)
+				render_method_e = RENDER_FILL_TRIANGLE;
+			if (eve.key.keysym.sym == SDLK_1)
+				render_method_e = RENDER_FILL_TRIANGLE_WIRE;
+			if (eve.key.keysym.sym == SDLK_PLUS)
+				cull_method_e = CULL_BACKFACE;
+			if (eve.key.keysym.sym == SDLK_MINUS)
+				cull_method_e = CULL_NONE;
 			break;
 	}
 }
@@ -97,26 +112,29 @@ void    update(void)
 			transformed_vertices[k] = transformed_vertex;
 		}
 
-		vec3d_t vec_a = transformed_vertices[0];
-		vec3d_t vec_b = transformed_vertices[1];
-		vec3d_t vec_c = transformed_vertices[2];
+		if (cull_method_e == CULL_BACKFACE)
+		{
+			vec3d_t vec_a = transformed_vertices[0];
+			vec3d_t vec_b = transformed_vertices[1];
+			vec3d_t vec_c = transformed_vertices[2];
 
-		vec3d_t vec_ab = vec3d_sub(vec_b, vec_a);
-		vec3d_t vec_ac = vec3d_sub(vec_c, vec_a);
+			vec3d_t vec_ab = vec3d_sub(vec_b, vec_a);
+			vec3d_t vec_ac = vec3d_sub(vec_c, vec_a);
 
-		vec3d_normalize(&vec_ab);
-		vec3d_normalize(&vec_ac);
+			vec3d_normalize(&vec_ab);
+			vec3d_normalize(&vec_ac);
 
-		vec3d_t normal = vec3d_cross(vec_ab, vec_ac);
+			vec3d_t normal = vec3d_cross(vec_ab, vec_ac);
 
-		vec3d_normalize(&normal);
+			vec3d_normalize(&normal);
 
-		vec3d_t camera_ray = vec3d_sub(camera_plane, vec_a);
+			vec3d_t camera_ray = vec3d_sub(camera_plane, vec_a);
 
-		float is_visible = vec3d_dot(normal, camera_ray);
+			float is_visible = vec3d_dot(normal, camera_ray);
 
-		if (is_visible < 0)
-			continue;
+			if (is_visible < 0)
+				continue;
+		}
 
 		for(int l = 0; l < 3; l++)
 		{
@@ -134,20 +152,48 @@ void    update(void)
 
 void    render(void)
 {
+	SDL_RenderClear(game_render);
 	draw_grid();
+	printf("Render mode - %d\n", render_method_e);
+	printf("Culling mode - %d\n", cull_method_e);
 	int num_triangles = array_length(triangles_to_render);
+
 	for(int q = 0; q < num_triangles; q++)
 	{
 		triangle_t triangle = triangles_to_render[q];
-		draw_rect(triangle.points[0].x , triangle.points[0].y, 4, 4, 0xBBBBBBFF);
-		draw_rect(triangle.points[1].x , triangle.points[1].y, 4, 4, 0xBBBBBBFF);
-		draw_rect(triangle.points[2].x , triangle.points[2].y, 4, 4, 0xBBBBBBFF);
-		draw_triangle(
-			triangle.points[0].x, triangle.points[0].y,
-			triangle.points[1].x, triangle.points[1].y,
-			triangle.points[2].x, triangle.points[2].y,
-			0xFF00FF00);
+		
+		if (render_method_e == RENDER_FILL_TRIANGLE ||
+			render_method_e == RENDER_FILL_TRIANGLE_WIRE)
+		{
+			draw_triangle_filled(
+				triangle.points[0].x, triangle.points[0].y,
+				triangle.points[1].x, triangle.points[1].y,
+				triangle.points[2].x, triangle.points[2].y,
+				0xFF00FF00);
+		}
+		
+		if (render_method_e == RENDER_WIRE ||
+			render_method_e == RENDER_WIRE_VERTEX)
+		{
+			draw_triangle(
+				triangle.points[0].x, triangle.points[0].y,
+				triangle.points[1].x, triangle.points[1].y,
+				triangle.points[2].x, triangle.points[2].y,
+				0xFFFFFFFF);
+		}
+
+		if (render_method_e == RENDER_WIRE_VERTEX)
+		{
+			draw_rect( triangle.points[0].x - 2,
+				triangle.points[0].y, 4, 4, 0xFFFF0000);
+			draw_rect( triangle.points[1].x - 2,
+				triangle.points[1].y, 4, 4, 0xFFFF0000);
+			draw_rect( triangle.points[2].x - 2,
+				triangle.points[2].y, 4, 4, 0xFFFF0000);
+		}
+
 	}
+
 	array_free(triangles_to_render);
 	render_color_buffer();
 	clear_color_buffer(0x000000FF);

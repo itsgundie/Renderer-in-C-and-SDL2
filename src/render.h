@@ -30,11 +30,24 @@
 #define OBJ_9 "./assets/f22.obj"
 #define OBJ_0 "./assets/cube.obj"
 
-#define	MODEL_OBJ OBJ_9
+#define	MODEL_OBJ OBJ_0
 #define	LINE_SIZE 1024
 
 #define FOV	640.0f
 
+enum    cull_method
+{
+        CULL_NONE,
+        CULL_BACKFACE
+}       cull_method_e;
+
+enum    render_method
+{
+        RENDER_WIRE,
+        RENDER_WIRE_VERTEX,
+        RENDER_FILL_TRIANGLE,
+        RENDER_FILL_TRIANGLE_WIRE
+}       render_method_e;
 
 extern unsigned int    win_width;
 extern unsigned int    win_height;
