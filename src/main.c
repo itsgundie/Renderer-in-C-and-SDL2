@@ -48,15 +48,15 @@ void    input_catch(void)
 				game_is_on = false;
 			if (eve.key.keysym.sym == SDLK_1)
 				render_method_e = RENDER_WIRE;
-			if (eve.key.keysym.sym == SDLK_1)
+			if (eve.key.keysym.sym == SDLK_2)
 				render_method_e = RENDER_WIRE_VERTEX;
-			if (eve.key.keysym.sym == SDLK_1)
+			if (eve.key.keysym.sym == SDLK_3)
 				render_method_e = RENDER_FILL_TRIANGLE;
-			if (eve.key.keysym.sym == SDLK_1)
+			if (eve.key.keysym.sym == SDLK_4)
 				render_method_e = RENDER_FILL_TRIANGLE_WIRE;
-			if (eve.key.keysym.sym == SDLK_PLUS)
+			if (eve.key.keysym.sym == SDLK_5)
 				cull_method_e = CULL_BACKFACE;
-			if (eve.key.keysym.sym == SDLK_MINUS)
+			if (eve.key.keysym.sym == SDLK_6)
 				cull_method_e = CULL_NONE;
 			break;
 	}
@@ -69,6 +69,51 @@ vec2d_t     project3to2d(vec3d_t source)
 		.y = (FOV * source.y) / source.z
 	};
 	return(projection);
+}
+
+void	swap_triangle(triangle_t *a, triangle_t *b)
+{
+	triangle_t tmp = *a;
+	*a = *b;
+	*b = tmp;
+}
+
+// void	sort_bubble_faces_array(triangle_t *triangles, int length)
+// {
+// 	for(int j = 0; j < length; j++)
+// 		for(int k = j; k < length; k++)
+// 			if (triangles[j].avg_depth < triangles[k].avg_depth)
+// 				swap_triangle(&(triangles[j]), &(triangles[k]));
+// }
+
+int		sort_quick_faces_array(triangle_t *triangles, int start_index, int last_index)
+{
+	float pivot = triangles[last_index].avg_depth;
+
+	int j = start_index;
+
+	for (int k = start_index; k < last_index; k++)
+	{
+		if (triangles[k].avg_depth > pivot)
+		{
+			if (j != k)
+				swap_triangle(&(triangles[j]), &(triangles[k]));
+		}
+		j++;
+	}
+	swap_triangle(&(triangles[j]), &(triangles[last_index]));
+	return(j);
+
+}
+
+void	sort_quick_triangles(triangle_t *triangles, int start_index, int last_index)
+{
+	if (start_index < last_index)
+	{
+		int pivot_index = sort_quick_faces_array(triangles, start_index, last_index);
+		sort_quick_triangles(triangles, start_index, pivot_index - 1);
+		sort_quick_triangles(triangles, pivot_index + 1, last_index);
+	}
 }
 
 void    update(void)
@@ -145,8 +190,24 @@ void    update(void)
 
 			projected_triangle.points[l] = projected_point;
 		}
+			projected_triangle.avg_depth = (transformed_vertices[0].z
+				+ transformed_vertices[1].z
+			 	+ transformed_vertices[2].z) / 3;
 		array_push(triangles_to_render, projected_triangle);
 	}
+	int num_triangles = array_length(triangles_to_render);
+
+	sort_quick_triangles(triangles_to_render, 0, num_triangles - 1);
+
+	// for(int j = 0; j < num_triangles; j++)
+	// 	for(int k = j; k < num_triangles; k++)
+	// 		if (triangles_to_render[j].avg_depth < triangles_to_render[k].avg_depth)
+	// 			swap_triangle(&(triangles_to_render[j]), &(triangles_to_render[k]));
+	//if (num_faces <= 5)
+	//	sort_bubble_faces_array(triangles_to_render, num_faces);
+	// else
+	// 	sort_quick_faces_array(triangles_to_render, num_faces);
+	
 	
 }
 
@@ -173,7 +234,8 @@ void    render(void)
 		}
 		
 		if (render_method_e == RENDER_WIRE ||
-			render_method_e == RENDER_WIRE_VERTEX)
+			render_method_e == RENDER_WIRE_VERTEX ||
+			render_method_e == RENDER_FILL_TRIANGLE_WIRE)
 		{
 			draw_triangle(
 				triangle.points[0].x, triangle.points[0].y,
@@ -184,19 +246,19 @@ void    render(void)
 
 		if (render_method_e == RENDER_WIRE_VERTEX)
 		{
-			draw_rect( triangle.points[0].x - 2,
-				triangle.points[0].y, 4, 4, 0xFFFF0000);
-			draw_rect( triangle.points[1].x - 2,
-				triangle.points[1].y, 4, 4, 0xFFFF0000);
-			draw_rect( triangle.points[2].x - 2,
-				triangle.points[2].y, 4, 4, 0xFFFF0000);
+			draw_rect( triangle.points[0].x - 12,
+				triangle.points[0].y, 24, 24, 0xFFFF0000);
+			draw_rect( triangle.points[1].x - 12,
+				triangle.points[1].y, 24, 24, 0xFFFF0000);
+			draw_rect( triangle.points[2].x - 12,
+				triangle.points[2].y, 24, 24, 0xFFFF0000);
 		}
 
 	}
 
 	array_free(triangles_to_render);
 	render_color_buffer();
-	clear_color_buffer(0x000000FF);
+	clear_color_buffer(0x00000000);
 	SDL_RenderPresent(game_render);
 }
 
