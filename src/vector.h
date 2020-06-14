@@ -14,6 +14,14 @@ typedef struct s_vec3d
 				float z;
 }               vec3d_t;
 
+typedef struct s_vec4d
+{
+				float x;
+				float y;
+				float z;
+				float w;
+}               vec4d_t;
+
 float		vec2d_length(vec2d_t vector);
 
 float		vec3d_length(vec3d_t vector);
@@ -49,6 +57,10 @@ vec3d_t		vec3_rotate_x(vec3d_t vector, float angle);
 vec3d_t		vec3_rotate_y(vec3d_t vector, float angle);
 
 vec3d_t		vec3_rotate_z(vec3d_t vector, float angle);
+
+vec4d_t		vec4d_from_vec3d(vec3d_t vec);
+
+vec3d_t		vec3d_from_vec4d(vec4d_t vec);
 
 
 #endif

@@ -148,9 +148,9 @@ vec3d_t vec3_rotate_x(vec3d_t vector, float angle)
 
 vec3d_t vec3_rotate_y(vec3d_t vector, float angle)
 {
-	vec3d_t rotated = { .x = vector.x * cos(angle) - vector.z * sin(angle),
+	vec3d_t rotated = { .x = vector.x * cos(angle) + vector.z * sin(angle),
 						.y = vector.y ,
-						.z = vector.x * sin(angle) + vector.z * cos(angle)
+						.z = vector.x * -sin(angle) + vector.z * cos(angle)
 					  };
 	return(rotated);
 }
@@ -163,4 +163,16 @@ vec3d_t vec3_rotate_z(vec3d_t vector, float angle)
 						.z = vector.z
 					  };
 	return(rotated);
+}
+
+vec3d_t		vec3d_from_vec4d(vec4d_t vec)
+{
+	vec3d_t		result = {vec.x, vec.y, vec.z};
+	return(result);
+}
+
+vec4d_t		vec4d_from_vec3d(vec3d_t vec)
+{
+	vec4d_t		result = {vec.x, vec.y, vec.z, 1.0f};
+	return(result);
 }

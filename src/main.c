@@ -4,6 +4,7 @@
 #include "vector.h"
 #include "triangle.h"
 #include "array.h"
+#include "matrix.h"
 
 triangle_t	*triangles_to_render = NULL;
 bool	game_is_on = false;
@@ -23,13 +24,13 @@ void    setup(void)
 							win_width,
 							win_height);
 	load_obj_file_data(MODEL_OBJ);
-	vec3d_t a = { .x = -4.6f, .y = 1.9f, .z = -9.99f};
-	vec3d_t b = { .x = 14.7f, .y = -11.77f, .z = 45.67f};
+	// vec3d_t a = { .x = -4.6f, .y = 1.9f, .z = -9.99f};
+	// vec3d_t b = { .x = 14.7f, .y = -11.77f, .z = 45.67f};
 
-	float a_length = vec3d_length(a);
-	float b_length = vec3d_length(b);
+	// float a_length = vec3d_length(a);
+	// float b_length = vec3d_length(b);
 
-	printf("Length A - %f and B - %f\n", a_length, b_length);
+	// printf("Length A - %f and B - %f\n", a_length, b_length);
 
 }
 
@@ -131,6 +132,22 @@ void    update(void)
 	mesh.rotation.x += 0.0;
 	mesh.rotation.z += 0.01;
 
+	mesh.scaling.x += 0.00002;
+	mesh.scaling.y += 0.00002;
+	mesh.scaling.z += 0.00002;
+
+	mesh.translation.x += 0.00000002;
+	mesh.translation.y += 0.00000002;
+	mesh.translation.z += 0.05;
+
+	mtx4_t	rotation_matrix_x = mtx4_rotation_x(mesh.rotation.x);
+	mtx4_t rotation_matrix_y = mtx4_rotation_y(mesh.rotation.y);
+	mtx4_t rotation_matrix_z = mtx4_rotation_z(mesh.rotation.z);
+
+	mtx4_t	translate_matrix = mtx4_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
+
+	mtx4_t scale_matrix = mtx4_scaling(mesh.scaling.x, mesh.scaling.y, mesh.scaling.z);
+
 	int num_faces = array_length(mesh.faces);
 	for(int j = 0; j < num_faces; j++)
 	{
@@ -147,14 +164,21 @@ void    update(void)
 
 		for(int k = 0; k < 3; k++)
 		{
-			vec3d_t transformed_vertex = this_face_vertices[k];
-			transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
-			transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
-			transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
-		
-			transformed_vertex.z -= 5;
+			vec4d_t transformed_vertex = vec4d_from_vec3d(this_face_vertices[k]);
 
-			transformed_vertices[k] = transformed_vertex;
+
+			// transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
+			// transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
+			// transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
+
+
+			//transformed_vertex = mtx4_mult_vec4d(scale_matrix,transformed_vertex);
+			transformed_vertex = mtx4_mult_vec4d(rotation_matrix_x, transformed_vertex);
+			transformed_vertex = mtx4_mult_vec4d(rotation_matrix_y, transformed_vertex);
+			transformed_vertex = mtx4_mult_vec4d(rotation_matrix_z, transformed_vertex);
+			transformed_vertex = mtx4_mult_vec4d(translate_matrix, transformed_vertex);
+
+			transformed_vertices[k] = vec3d_from_vec4d(transformed_vertex);
 		}
 
 		if (cull_method_e == CULL_BACKFACE)
@@ -215,8 +239,8 @@ void    render(void)
 {
 	SDL_RenderClear(game_render);
 	draw_grid();
-	printf("Render mode - %d\n", render_method_e);
-	printf("Culling mode - %d\n", cull_method_e);
+	// printf("Render mode - %d\n", render_method_e);
+	// printf("Culling mode - %d\n", cull_method_e);
 	int num_triangles = array_length(triangles_to_render);
 
 	for(int q = 0; q < num_triangles; q++)

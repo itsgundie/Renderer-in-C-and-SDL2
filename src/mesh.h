@@ -26,6 +26,8 @@ typedef struct {
     face_mesh_t* normal_indices;    // dynamic array of faces
     face_mesh_t* texture_indices;   // dynamic array of faces
     vec3d_t rotation;  // rotation with x, y, and z values
+    vec3d_t translation; // translate x, y and z coordinate
+    vec3d_t scaling; // scale by some or all dimensions
 } mesh_t;
 
 extern mesh_t mesh;

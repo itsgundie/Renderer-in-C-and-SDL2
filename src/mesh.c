@@ -5,8 +5,14 @@
 
 mesh_t mesh = {
     .vertices = NULL,
+    .normals = NULL,
+    .textures = NULL,
+    .normal_indices = NULL,
+    .texture_indices = NULL,
     .faces = NULL,
-    .rotation = { 0, 0, 0 }
+    .rotation = { 0, 0, 0 },
+    .translation = { 0, 0, 0 },
+    .scaling = { 1.0, 1.0, 1.0 }
 };
 
 vec3d_t cube_vertices[NUM_CUBE_VERTS] = {{0}};
