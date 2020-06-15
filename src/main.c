@@ -166,17 +166,25 @@ void    update(void)
 		{
 			vec4d_t transformed_vertex = vec4d_from_vec3d(this_face_vertices[k]);
 
-
+			mtx4_t world_matrix = mtx4_identity();
+			world_matrix = mtx4_mult_mtx4(scale_matrix, world_matrix);
+			world_matrix = mtx4_mult_mtx4(rotation_matrix_x, world_matrix);
+			world_matrix = mtx4_mult_mtx4(rotation_matrix_y, world_matrix);
+			world_matrix = mtx4_mult_mtx4(rotation_matrix_z, world_matrix);
+			world_matrix = mtx4_mult_mtx4(translate_matrix, world_matrix);
+			// world_matrix = mtx4_mult_mtx4(world_matrix, rotation_matrix);
+			// world_matrix = mtx4_mult_mtx4(world_matrix, translate_matrix);
 			// transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
 			// transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
 			// transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
 
+			transformed_vertex = mtx4_mult_vec4d(world_matrix, transformed_vertex);
 
 			//transformed_vertex = mtx4_mult_vec4d(scale_matrix,transformed_vertex);
-			transformed_vertex = mtx4_mult_vec4d(rotation_matrix_x, transformed_vertex);
-			transformed_vertex = mtx4_mult_vec4d(rotation_matrix_y, transformed_vertex);
-			transformed_vertex = mtx4_mult_vec4d(rotation_matrix_z, transformed_vertex);
-			transformed_vertex = mtx4_mult_vec4d(translate_matrix, transformed_vertex);
+			// transformed_vertex = mtx4_mult_vec4d(rotation_matrix_x, transformed_vertex);
+			// transformed_vertex = mtx4_mult_vec4d(rotation_matrix_y, transformed_vertex);
+			// transformed_vertex = mtx4_mult_vec4d(rotation_matrix_z, transformed_vertex);
+			// transformed_vertex = mtx4_mult_vec4d(translate_matrix, transformed_vertex);
 
 			transformed_vertices[k] = vec3d_from_vec4d(transformed_vertex);
 		}

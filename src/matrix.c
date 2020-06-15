@@ -34,6 +34,19 @@ vec4d_t     mtx4_mult_vec4d(mtx4_t mat, vec4d_t vec)
     return(result);
 }
 
+mtx4_t      mtx4_mult_mtx4(mtx4_t first, mtx4_t second)
+{
+    mtx4_t  result = {0};
+    for (int row = 0; row < 4; row++)
+        for (int col = 0; col < 4; col++)
+        {
+                result.m[row][col] = first.m[row][0] * second.m[0][col] 
+                                    + first.m[row][1] * second.m[1][col]
+                                    + first.m[row][2] * second.m[2][col]
+                                    + first.m[row][3] * second.m[3][col];
+        }
+    return(result);
+}
 
 mtx4_t      mtx4_translation(float tx, float ty, float tz)
 {
