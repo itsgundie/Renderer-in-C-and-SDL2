@@ -17,5 +17,6 @@ mtx4_t      mtx4_translation(float tx, float ty, float tz);
 mtx4_t      mtx4_rotation_x(float angle);
 mtx4_t      mtx4_rotation_y(float angle);
 mtx4_t      mtx4_rotation_z(float angle);
-
+mtx4_t      mtx4_perspective(float fov, float aspect, float z_near, float z_far);
+vec4d_t		mtx4_mult_vec4d_projection(mtx4_t proj_matrx, vec4d_t vec);
 #endif

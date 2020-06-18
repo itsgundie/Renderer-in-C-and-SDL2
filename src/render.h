@@ -33,7 +33,9 @@
 #define	MODEL_OBJ OBJ_0
 #define	LINE_SIZE 1024
 
-#define FOV	640.0f
+#define PIE 3.14159265358979323846
+
+#define FOV     640.0f
 
 enum    cull_method
 {

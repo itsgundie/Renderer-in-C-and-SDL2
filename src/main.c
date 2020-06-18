@@ -6,10 +6,12 @@
 #include "array.h"
 #include "matrix.h"
 
+
 triangle_t	*triangles_to_render = NULL;
 bool	game_is_on = false;
 int prev_frame_time = 0;
 vec3d_t camera_plane = {0};
+mtx4_t	proj_matrx;
 
 void    setup(void)
 {
@@ -23,7 +25,13 @@ void    setup(void)
 							SDL_TEXTUREACCESS_STREAMING,
 							win_width,
 							win_height);
-	load_obj_file_data(MODEL_OBJ);
+
+	float fov = PIE / 3.0f;
+	float aspect = ((float)win_height) / (float)win_width;
+	float z_near = 0.1f;
+	float z_far = 100.0f;
+	proj_matrx = mtx4_perspective(fov, aspect, z_near, z_far);
+
 	// vec3d_t a = { .x = -4.6f, .y = 1.9f, .z = -9.99f};
 	// vec3d_t b = { .x = 14.7f, .y = -11.77f, .z = 45.67f};
 
@@ -31,6 +39,8 @@ void    setup(void)
 	// float b_length = vec3d_length(b);
 
 	// printf("Length A - %f and B - %f\n", a_length, b_length);
+
+	load_obj_file_data(MODEL_OBJ);
 
 }
 
@@ -128,25 +138,25 @@ void    update(void)
 
 	triangles_to_render = NULL;
 
-	mesh.rotation.y += 0.01;
-	mesh.rotation.x += 0.0;
-	mesh.rotation.z += 0.01;
+	mesh.rotation.y += 0.004;
+	mesh.rotation.x += 0.007;
+	mesh.rotation.z += 0.009;
 
-	mesh.scaling.x += 0.00002;
-	mesh.scaling.y += 0.00002;
-	mesh.scaling.z += 0.00002;
+	// mesh.scaling.x += 0.00002;
+	// mesh.scaling.y += 0.00002;
+	// mesh.scaling.z += 0.00002;
 
-	mesh.translation.x += 0.00000002;
-	mesh.translation.y += 0.00000002;
-	mesh.translation.z += 0.05;
+	// mesh.translation.x += 0.002;
+	// mesh.translation.y += 0.00000002;
+	mesh.translation.z = 5.0;
+
+	mtx4_t scale_matrix = mtx4_scaling(mesh.scaling.x, mesh.scaling.y, mesh.scaling.z);
+	
+	mtx4_t	translate_matrix = mtx4_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
 
 	mtx4_t	rotation_matrix_x = mtx4_rotation_x(mesh.rotation.x);
 	mtx4_t rotation_matrix_y = mtx4_rotation_y(mesh.rotation.y);
 	mtx4_t rotation_matrix_z = mtx4_rotation_z(mesh.rotation.z);
-
-	mtx4_t	translate_matrix = mtx4_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
-
-	mtx4_t scale_matrix = mtx4_scaling(mesh.scaling.x, mesh.scaling.y, mesh.scaling.z);
 
 	int num_faces = array_length(mesh.faces);
 	for(int j = 0; j < num_faces; j++)
@@ -167,6 +177,7 @@ void    update(void)
 			vec4d_t transformed_vertex = vec4d_from_vec3d(this_face_vertices[k]);
 
 			mtx4_t world_matrix = mtx4_identity();
+
 			world_matrix = mtx4_mult_mtx4(scale_matrix, world_matrix);
 			world_matrix = mtx4_mult_mtx4(rotation_matrix_x, world_matrix);
 			world_matrix = mtx4_mult_mtx4(rotation_matrix_y, world_matrix);
@@ -213,19 +224,34 @@ void    update(void)
 				continue;
 		}
 
+		vec4d_t projected_points[3];
+
 		for(int l = 0; l < 3; l++)
 		{
-			vec2d_t projected_point = project3to2d(transformed_vertices[l]);
+			projected_points[l] = mtx4_mult_vec4d_projection(proj_matrx, vec4d_from_vec3d(transformed_vertices[l]));
+			//vec2d_t projected_point = project3to2d(transformed_vertices[l]);
 
-			projected_point.x += (win_width / 2);
-			projected_point.y += (win_height / 2);
+			projected_points[l].x *= (win_width / 2.0f);
+			projected_points[l].y *= (win_height / 2.0f);
 
-			projected_triangle.points[l] = projected_point;
+			projected_points[l].x += (win_width / 2.0f);
+			projected_points[l].y += (win_height / 2.0f);
+
+			//transformed_vertices[l] = vec3d_from_vec4d(projected_points[l]);
+
 		}
 			projected_triangle.avg_depth = (transformed_vertices[0].z
 				+ transformed_vertices[1].z
 			 	+ transformed_vertices[2].z) / 3;
+			projected_triangle.points[0].x = projected_points[0].x;
+			projected_triangle.points[0].y = projected_points[0].y;
+			projected_triangle.points[1].x = projected_points[1].x;
+			projected_triangle.points[1].y = projected_points[1].y;
+			projected_triangle.points[2].x = projected_points[2].x;
+			projected_triangle.points[2].y = projected_points[2].y;
+			projected_triangle.color = 0xFFFFFFFF - (rand() % 0x11111111);
 		array_push(triangles_to_render, projected_triangle);
+
 	}
 	int num_triangles = array_length(triangles_to_render);
 
@@ -262,7 +288,7 @@ void    render(void)
 				triangle.points[0].x, triangle.points[0].y,
 				triangle.points[1].x, triangle.points[1].y,
 				triangle.points[2].x, triangle.points[2].y,
-				0xFF00FF00);
+				triangle.color);
 		}
 		
 		if (render_method_e == RENDER_WIRE ||
