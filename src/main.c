@@ -237,6 +237,8 @@ void    update(void)
 			projected_points[l].x *= (win_width / 2.0f);
 			projected_points[l].y *= (win_height / 2.0f);
 
+			projected_points[l].y *= -1;
+
 			projected_points[l].x += (win_width / 2.0f);
 			projected_points[l].y += (win_height / 2.0f);
 
@@ -324,7 +326,7 @@ void    render(void)
 
 	array_free(triangles_to_render);
 	render_color_buffer();
-	clear_color_buffer(0x00000000);
+	clear_color_buffer(COLOR_BLACK);
 	SDL_RenderPresent(game_render);
 }
 
