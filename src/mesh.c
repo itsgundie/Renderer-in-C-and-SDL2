@@ -126,6 +126,7 @@ void load_obj_file_data(char* filename) {
                         );
                     }
                 }
+                vertex_indices.color = COLOR_WHITE;
                 array_push(mesh.faces, vertex_indices);
             } break;
         }

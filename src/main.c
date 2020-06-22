@@ -5,6 +5,7 @@
 #include "triangle.h"
 #include "array.h"
 #include "matrix.h"
+#include "lightning.h"
 
 
 triangle_t	*triangles_to_render = NULL;
@@ -163,6 +164,8 @@ void    update(void)
 	{
 		face_mesh_t this_face = mesh.faces[j];
 		vec3d_t this_face_vertices[3];
+		//this_face.color = 0xABCDEF99;
+		// this_face.color = 0x11111111 * (j + 1);
 
 		this_face_vertices[0] = mesh.vertices[this_face.a - 1];
 		this_face_vertices[1] = mesh.vertices[this_face.b - 1];
@@ -200,24 +203,24 @@ void    update(void)
 			transformed_vertices[k] = vec3d_from_vec4d(transformed_vertex);
 		}
 
+		vec3d_t vec_a = transformed_vertices[0];
+		vec3d_t vec_b = transformed_vertices[1];
+		vec3d_t vec_c = transformed_vertices[2];
+
+		vec3d_t vec_ab = vec3d_sub(vec_b, vec_a);
+		vec3d_t vec_ac = vec3d_sub(vec_c, vec_a);
+
+		vec3d_normalize(&vec_ab);
+		vec3d_normalize(&vec_ac);
+
+		vec3d_t normal = vec3d_cross(vec_ab, vec_ac);
+
+		vec3d_normalize(&normal);
+
+		vec3d_t camera_ray = vec3d_sub(camera_plane, vec_a);
+
 		if (cull_method_e == CULL_BACKFACE)
 		{
-			vec3d_t vec_a = transformed_vertices[0];
-			vec3d_t vec_b = transformed_vertices[1];
-			vec3d_t vec_c = transformed_vertices[2];
-
-			vec3d_t vec_ab = vec3d_sub(vec_b, vec_a);
-			vec3d_t vec_ac = vec3d_sub(vec_c, vec_a);
-
-			vec3d_normalize(&vec_ab);
-			vec3d_normalize(&vec_ac);
-
-			vec3d_t normal = vec3d_cross(vec_ab, vec_ac);
-
-			vec3d_normalize(&normal);
-
-			vec3d_t camera_ray = vec3d_sub(camera_plane, vec_a);
-
 			float is_visible = vec3d_dot(normal, camera_ray);
 
 			if (is_visible < 0)
@@ -243,13 +246,18 @@ void    update(void)
 			projected_triangle.avg_depth = (transformed_vertices[0].z
 				+ transformed_vertices[1].z
 			 	+ transformed_vertices[2].z) / 3;
+
+			float luminosity = -(vec3d_dot(normal, light.direction));
+
+			uint32_t triangle_color = lumos(this_face.color, luminosity);
+
 			projected_triangle.points[0].x = projected_points[0].x;
 			projected_triangle.points[0].y = projected_points[0].y;
 			projected_triangle.points[1].x = projected_points[1].x;
 			projected_triangle.points[1].y = projected_points[1].y;
 			projected_triangle.points[2].x = projected_points[2].x;
 			projected_triangle.points[2].y = projected_points[2].y;
-			projected_triangle.color = 0xFFFFFFFF - (rand() % 0x11111111);
+			projected_triangle.color = triangle_color;
 		array_push(triangles_to_render, projected_triangle);
 
 	}
@@ -299,17 +307,17 @@ void    render(void)
 				triangle.points[0].x, triangle.points[0].y,
 				triangle.points[1].x, triangle.points[1].y,
 				triangle.points[2].x, triangle.points[2].y,
-				0xFFFFFFFF);
+				COLOR_RED);
 		}
 
 		if (render_method_e == RENDER_WIRE_VERTEX)
 		{
 			draw_rect( triangle.points[0].x - 12,
-				triangle.points[0].y, 24, 24, 0xFFFF0000);
+				triangle.points[0].y, 24, 24, COLOR_GREEN);
 			draw_rect( triangle.points[1].x - 12,
-				triangle.points[1].y, 24, 24, 0xFFFF0000);
+				triangle.points[1].y, 24, 24, COLOR_GREEN);
 			draw_rect( triangle.points[2].x - 12,
-				triangle.points[2].y, 24, 24, 0xFFFF0000);
+				triangle.points[2].y, 24, 24, COLOR_GREEN);
 		}
 
 	}

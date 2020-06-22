@@ -30,12 +30,19 @@
 #define OBJ_9 "./assets/f22.obj"
 #define OBJ_0 "./assets/cube.obj"
 
-#define	MODEL_OBJ OBJ_0
+#define	MODEL_OBJ OBJ_9
 #define	LINE_SIZE 1024
 
 #define PIE 3.14159265358979323846
 
 #define FOV     640.0f
+
+#define COLOR_BLACK     0x00000000
+#define COLOR_WHITE     0xFFFFFFFF
+#define COLOR_GREEN     0x00FF0000
+#define COLOR_BLUE      0x0000FF00
+#define COLOR_CYAN      0x00FFFF00
+#define COLOR_RED       0xFF000000
 
 enum    cull_method
 {
