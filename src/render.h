@@ -55,7 +55,9 @@ enum    render_method
         RENDER_WIRE,
         RENDER_WIRE_VERTEX,
         RENDER_FILL_TRIANGLE,
-        RENDER_FILL_TRIANGLE_WIRE
+        RENDER_FILL_TRIANGLE_WIRE,
+        RENDER_TEXTURED,
+        RENDER_TEXTURED_WIRED
 }       render_method_e;
 
 extern unsigned int    win_width;
@@ -94,6 +96,8 @@ void	draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t colo
 void    render(void);
 
 void    setup(void);
+
+
 
 int     main(void);
 

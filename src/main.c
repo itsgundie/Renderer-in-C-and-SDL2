@@ -6,6 +6,7 @@
 #include "array.h"
 #include "matrix.h"
 #include "lightning.h"
+#include "texture.h"
 
 
 triangle_t	*triangles_to_render = NULL;
@@ -39,9 +40,11 @@ void    setup(void)
 	// float a_length = vec3d_length(a);
 	// float b_length = vec3d_length(b);
 
+	mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
+	texture_width = texture_height = 64;
 	// printf("Length A - %f and B - %f\n", a_length, b_length);
-
-	load_obj_file_data(MODEL_OBJ);
+	load_cube_mesh();
+	// load_obj_file_data(MODEL_OBJ);
 
 }
 
@@ -70,6 +73,10 @@ void    input_catch(void)
 				cull_method_e = CULL_BACKFACE;
 			if (eve.key.keysym.sym == SDLK_6)
 				cull_method_e = CULL_NONE;
+			if (eve.key.keysym.sym == SDLK_7)
+				render_method_e = RENDER_TEXTURED;
+			if (eve.key.keysym.sym == SDLK_8)
+				render_method_e = RENDER_TEXTURED_WIRED;
 			break;
 	}
 }
@@ -259,7 +266,16 @@ void    update(void)
 			projected_triangle.points[1].y = projected_points[1].y;
 			projected_triangle.points[2].x = projected_points[2].x;
 			projected_triangle.points[2].y = projected_points[2].y;
+
+			projected_triangle.tex_coords[0].u = this_face.a_uv.u;
+			projected_triangle.tex_coords[0].v = this_face.a_uv.v;
+			projected_triangle.tex_coords[1].u = this_face.b_uv.u;
+			projected_triangle.tex_coords[1].v = this_face.b_uv.v;
+			projected_triangle.tex_coords[2].u = this_face.c_uv.u;
+			projected_triangle.tex_coords[2].v = this_face.c_uv.v;
+
 			projected_triangle.color = triangle_color;
+
 		array_push(triangles_to_render, projected_triangle);
 
 	}
@@ -301,9 +317,19 @@ void    render(void)
 				triangle.color);
 		}
 		
+		if (render_method_e == RENDER_TEXTURED_WIRED || render_method_e == RENDER_TEXTURED)
+		{
+			draw_triangle_textured(
+				triangle.points[0].x, triangle.points[0].y, triangle.tex_coords[0].u, triangle.tex_coords[0].v,
+				triangle.points[1].x, triangle.points[1].y, triangle.tex_coords[1].u, triangle.tex_coords[1].v,
+				triangle.points[2].x, triangle.points[2].y, triangle.tex_coords[2].u, triangle.tex_coords[2].v,
+				mesh_texture);
+		}
+
 		if (render_method_e == RENDER_WIRE ||
-			render_method_e == RENDER_WIRE_VERTEX ||
-			render_method_e == RENDER_FILL_TRIANGLE_WIRE)
+				render_method_e == RENDER_WIRE_VERTEX ||
+					render_method_e == RENDER_FILL_TRIANGLE_WIRE || 
+						render_method_e == RENDER_TEXTURED_WIRED)
 		{
 			draw_triangle(
 				triangle.points[0].x, triangle.points[0].y,

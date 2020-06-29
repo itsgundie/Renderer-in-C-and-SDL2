@@ -4,6 +4,7 @@
 #include "array.h"
 #include "vector.h"
 #include "mesh.h"
+#include "tools.h"
 
 
 SDL_Window		*game_win = NULL;
@@ -88,13 +89,6 @@ void	draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t colo
 	draw_line(x2, y2, x0, y0, color);
 }
 
-void    swap_int(int *a, int *b)
-{
-    int tmp = *a;
-    *a = *b;
-    *b = tmp;
-}
-
 void    draw_triangle_fill_bottom(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
 {
     float inv_slope_1 = (float)(x1 - x0) / (y1 - y0);
@@ -161,6 +155,78 @@ void	draw_triangle_filled(int x0, int y0, int x1, int y1, int x2, int y2, uint32
 
 
 }
+
+void	draw_triangle_textured(int x0, int y0, float u0, float v0,
+			                    int x1, int y1, float u1, float v1,
+			                        int x2, int y2, float u2, float v2,
+			                            uint32_t *texture)
+{
+    if (y0 > y1)
+    {
+        swap_int(&y0, &y1);
+        swap_int(&x0, &x1);
+        swap_float(&u0, &u1);
+        swap_float(&v0, &v1);
+    }
+    if (y1 > y2)
+    {
+        swap_int(&y1, &y2);
+        swap_int(&x1, &x2);
+        swap_float(&u1, &u2);
+        swap_float(&v1, &v2);
+    }
+    if (y0 > y1)
+    {
+        swap_int(&y0, &y1);
+        swap_int(&x0, &x1);
+        swap_float(&u0, &u1);
+        swap_float(&v0, &v1);
+    }
+
+    float inv_slope_left = 0;
+    float inv_slope_right = 0;
+
+    inv_slope_left = (float)(x1 - x0) / ( (y1 - y0) != 0 ? abs(y1 - y0) : 1);
+    inv_slope_right = (float)(x2 - x0) / ( (y1 - y0) != 0 ? abs(y2 - y0) : 1);
+
+    if (y1 - y0 != 0)
+    {
+        for (int y = y0; y <= y1; y++)
+        {
+            int x_start = x1 + (y - y1) * inv_slope_left;
+            int x_end = x0 + (y - y0) * inv_slope_right;
+            
+            if (x_end < x_start)
+                swap_int(&x_start, &x_end);
+
+            for (int x = x_start; x < x_end; x++)
+            {
+                draw_pixel(x, y , 0xFF7711DD);
+            }
+        }
+
+    }
+
+    inv_slope_left = (float)(x2 - x1) / ((y2 - y1) != 0 ? abs(y2 - y1) : 1);
+    inv_slope_right = (float)(x2 - x0) / ((y2 - y0) != 0 ? abs(y2 - y0) : 1);
+
+    if (y2 - y1)
+    {
+        for (int y = y1; y <= y2; y++)
+        {
+            int x_start = x1 + (y - y1) * inv_slope_left;
+            int x_end = x0 + (y - y0) * inv_slope_right;
+
+            if (x_end < x_start)
+                swap_int(&x_start, &x_end);
+            for (int x = x_start; x < x_end; x++)
+            {
+                draw_pixel(x, y, 0xBB33CC00);
+            }
+        }
+    }
+}
+
 
 void    draw_rect(int x, int y, int width, int height, uint32_t color)
 {
