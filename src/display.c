@@ -33,7 +33,7 @@ bool    init_window(void)
                 SDL_WINDOWPOS_CENTERED,
                 win_width, 
                 win_height, 
-                SDL_WINDOW_BORDERLESS);
+                SDL_WINDOW_SHOWN);
     if(!game_win)
     {
         fprintf(stderr, "Error Creating Window\n");
@@ -151,10 +151,29 @@ void	draw_triangle_filled(int x0, int y0, int x1, int y1, int x2, int y2, uint32
         draw_triangle_fill_bottom(x0, y0, x1, y1, mid_x, mid_y, color);
         draw_triangle_fill_top(x1, y1, mid_x, mid_y, x2, y2, color);        
     }
-    
-
-
 }
+
+
+
+void    draw_texel(int x, int y, uint32_t *texture,
+                    vec2d_t point_a, vec2d_t point_b, vec2d_t point_c,
+                    float u0, float v0, float u1, float v1, float u2, float v2)
+{
+    vec2d_t point_p = {x, y};
+    vec3d_t weights = barycentric_weights(point_a, point_b, point_c, point_p);
+    float alpha = weights.x;
+    float beta = weights.y;
+    float gamma = weights.z;
+
+    float interpolated_u = u0 * alpha + u1 * beta + u2 * gamma;
+    float interpolated_v = v0 * alpha + v1 * beta + v2 * gamma;
+
+    int xTex = abs((int)(interpolated_u * texture_width));
+    int yTex = abs((int)(interpolated_v * texture_height));
+
+    draw_pixel(x, y, texture[(texture_width * yTex) + xTex]);
+}
+
 
 void	draw_triangle_textured(int x0, int y0, float u0, float v0,
 			                    int x1, int y1, float u1, float v1,
@@ -183,6 +202,10 @@ void	draw_triangle_textured(int x0, int y0, float u0, float v0,
         swap_float(&v0, &v1);
     }
 
+    vec2d_t point_a = {x0, y0};
+    vec2d_t point_b = {x1, y1};
+    vec2d_t point_c = {x2, y2};
+
     float inv_slope_left = 0;
     float inv_slope_right = 0;
 
@@ -201,7 +224,8 @@ void	draw_triangle_textured(int x0, int y0, float u0, float v0,
 
             for (int x = x_start; x < x_end; x++)
             {
-                draw_pixel(x, y , 0xFF7711DD);
+                draw_texel(x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
+                //draw_pixel(x, y , ((y % 2 && x % 2) ? 0xFF9933FF :0xFF7711DD));
             }
         }
 
@@ -221,7 +245,8 @@ void	draw_triangle_textured(int x0, int y0, float u0, float v0,
                 swap_int(&x_start, &x_end);
             for (int x = x_start; x < x_end; x++)
             {
-                draw_pixel(x, y, 0xBB33CC00);
+                draw_texel(x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
+                //draw_pixel(x, y, ((y % 2 && x % 2) ? 0xFF77FF44 : 0xBB33CC00));
             }
         }
     }

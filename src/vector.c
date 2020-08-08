@@ -176,3 +176,24 @@ vec4d_t		vec4d_from_vec3d(vec3d_t vec)
 	vec4d_t		result = {vec.x, vec.y, vec.z, 1.0f};
 	return(result);
 }
+
+
+
+vec3d_t		barycentric_weights(vec2d_t a, vec2d_t b, vec2d_t c, vec2d_t p)
+{
+	vec2d_t ab = vec2d_sub(b,a);
+	vec2d_t bc = vec2d_sub(c,b);
+	vec2d_t ac = vec2d_sub(c,a);
+	vec2d_t ap = vec2d_sub(p,a);
+	vec2d_t bp = vec2d_sub(p,b);
+
+	float area_triangle_abc = (ab.x * ac.y - ab.y * ac.x);
+
+	float alpha = (bc.x * bp.y - bp.x * bc.y) / area_triangle_abc;
+	float beta = (ap.x * ac.y - ac.x * ap.y) / area_triangle_abc;
+	float gamma = 1 - alpha - beta;
+
+	vec3d_t weights = {alpha, beta, gamma};
+
+	return(weights);
+}

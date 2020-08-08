@@ -62,5 +62,6 @@ vec4d_t		vec4d_from_vec3d(vec3d_t vec);
 
 vec3d_t		vec3d_from_vec4d(vec4d_t vec);
 
+vec3d_t		barycentric_weights(vec2d_t a, vec2d_t b, vec2d_t c, vec2d_t p);
 
 #endif
