@@ -14,6 +14,7 @@
 #include "vector.h"
 #include "triangle.h"
 #include "mesh.h"
+#include "texture.h"
 
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
@@ -66,6 +67,7 @@ extern bool            game_is_on;
 extern SDL_Window *    game_win;
 extern SDL_Renderer*   game_render;
 extern uint32_t*       color_buffer;
+extern float*          z_buf;
 extern SDL_Texture* color_buffer_texture;
 extern vec3d_t cube[NUMBER_OF_POINTS];
 extern vec2d_t cube_projected[NUMBER_OF_POINTS];
@@ -78,6 +80,8 @@ extern triangle_t* triangles_to_render;
 void    set_me_free(void);
 
 void    clear_color_buffer(uint32_t color);
+
+void    clear_z_buf();
 
 bool    init_window(void);
 

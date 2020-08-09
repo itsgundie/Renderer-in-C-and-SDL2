@@ -1,0 +1,33 @@
+Starting program:  > log.txt
+No executable file specified.
+Use the "file" or "exec-file" command.
+No symbol table loaded.  Use the "file" command.
+List of classes of commands:
+
+aliases -- Aliases of other commands
+breakpoints -- Making program stop at certain points
+data -- Examining data
+files -- Specifying and examining files
+internals -- Maintenance commands
+obscure -- Obscure features
+running -- Running the program
+stack -- Examining the stack
+status -- Status inquiries
+support -- Support facilities
+[mQuit
+Undefined command: "running".  Try "help".
+Starting program:  > log.txt
+No executable file specified.
+Use the "file" or "exec-file" command.
+Starting program:  file renderer
+No executable file specified.
+Use the "file" or "exec-file" command.
+Reading symbols from [32mrenderer[m...
+Starting program: /home/gundie/Desktop/Renderer-in-C-and-SDL2/renderer file renderer
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[New Thread 0x7ffff6c31700 (LWP 14033)]
+[New Thread 0x7fffe3582700 (LWP 14036)]
+[Thread 0x7fffe3582700 (LWP 14036) exited]
+[Thread 0x7ffff6c31700 (LWP 14033) exited]
+[Inferior 1 (process 14029) exited normally]

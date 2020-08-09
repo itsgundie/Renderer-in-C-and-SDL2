@@ -6,3 +6,10 @@ run:
 
 clean:
 	rm renderer
+	rm log.log
+
+log:
+	./renderer > log.log
+
+read:
+	tail -20 log.log

@@ -5,11 +5,13 @@
 #include "vector.h"
 #include "mesh.h"
 #include "tools.h"
+#include "texture.h"
 
 
 SDL_Window		*game_win = NULL;
 SDL_Renderer	*game_render = NULL;
 uint32_t		*color_buffer = NULL;
+float           *z_buf = NULL;
 SDL_Texture		*color_buffer_texture = NULL;
 
 unsigned int    win_width = 320;
@@ -155,102 +157,146 @@ void	draw_triangle_filled(int x0, int y0, int x1, int y1, int x2, int y2, uint32
 
 
 
-void    draw_texel(int x, int y, uint32_t *texture,
-                    vec2d_t point_a, vec2d_t point_b, vec2d_t point_c,
-                    float u0, float v0, float u1, float v1, float u2, float v2)
-{
-    vec2d_t point_p = {x, y};
-    vec3d_t weights = barycentric_weights(point_a, point_b, point_c, point_p);
+void draw_texel(
+    int x, int y, uint32_t* texture,
+    vec4d_t point_a, vec4d_t point_b, vec4d_t point_c,
+    tex2_t a_uv, tex2_t b_uv, tex2_t c_uv
+) {
+    vec2d_t p = { x, y };
+    vec2d_t a = vec2d_from_vec4d(point_a);
+    vec2d_t b = vec2d_from_vec4d(point_b);
+    vec2d_t c = vec2d_from_vec4d(point_c);
+
+    vec3d_t weights = barycentric_weights(a, b, c, p);
+
     float alpha = weights.x;
     float beta = weights.y;
     float gamma = weights.z;
 
-    float interpolated_u = u0 * alpha + u1 * beta + u2 * gamma;
-    float interpolated_v = v0 * alpha + v1 * beta + v2 * gamma;
+    // Variables to store the interpolated values of U, V, and also 1/w for the current pixel
+    float interpolated_u;
+    float interpolated_v;
+    float interpolated_reciprocal_w;
 
-    int xTex = abs((int)(interpolated_u * texture_width));
-    int yTex = abs((int)(interpolated_v * texture_height));
+    // Perform the interpolation of all U/w and V/w values using barycentric weights and a factor of 1/w
+    interpolated_u = (a_uv.u / point_a.w) * alpha + (b_uv.u / point_b.w) * beta + (c_uv.u / point_c.w) * gamma;
+    interpolated_v = (a_uv.v / point_a.w) * alpha + (b_uv.v / point_b.w) * beta + (c_uv.v / point_c.w) * gamma;
 
-    draw_pixel(x, y, texture[(texture_width * yTex) + xTex]);
+    // Also interpolate the value of 1/w for the current pixel
+    interpolated_reciprocal_w = (1 / point_a.w) * alpha + (1 / point_b.w) * beta + (1 / point_c.w) * gamma;
+
+    // Now we can divide back both interpolated values by 1/w
+    interpolated_u /= interpolated_reciprocal_w;
+    interpolated_v /= interpolated_reciprocal_w;
+
+    // Map the UV coordinate to the full texture width and height
+    int tex_x = abs((int)(interpolated_u * texture_width));
+    int tex_y = abs((int)(interpolated_v * texture_height));
+
+    interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
+
+    if(interpolated_reciprocal_w < z_buf[(win_width * y) + x])
+    {   
+        if ((tex_x >= 0 && tex_x < texture_width) && (tex_y >= 0 && tex_y < texture_height))
+        {
+            draw_pixel(x, y, texture[(texture_width * tex_y) + tex_x]);
+            z_buf[(win_width * y) + x] = interpolated_reciprocal_w;
+        }
+    }
 }
 
 
-void	draw_triangle_textured(int x0, int y0, float u0, float v0,
-			                    int x1, int y1, float u1, float v1,
-			                        int x2, int y2, float u2, float v2,
-			                            uint32_t *texture)
-{
-    if (y0 > y1)
-    {
+void draw_triangle_textured(
+    int x0, int y0, float z0, float w0, float u0, float v0,
+    int x1, int y1, float z1, float w1, float u1, float v1,
+    int x2, int y2, float z2, float w2, float u2, float v2,
+    uint32_t* texture
+) {
+    // We need to sort the vertices by y-coordinate ascending (y0 < y1 < y2)
+    if (y0 > y1) {
         swap_int(&y0, &y1);
         swap_int(&x0, &x1);
+        swap_float(&z0, &z1);
+        swap_float(&w0, &w1);
         swap_float(&u0, &u1);
         swap_float(&v0, &v1);
     }
-    if (y1 > y2)
-    {
+    if (y1 > y2) {
         swap_int(&y1, &y2);
         swap_int(&x1, &x2);
+        swap_float(&z1, &z2);
+        swap_float(&w1, &w2);
         swap_float(&u1, &u2);
         swap_float(&v1, &v2);
     }
-    if (y0 > y1)
-    {
+    if (y0 > y1) {
         swap_int(&y0, &y1);
         swap_int(&x0, &x1);
+        swap_float(&z0, &z1);
+        swap_float(&w0, &w1);
         swap_float(&u0, &u1);
         swap_float(&v0, &v1);
     }
 
-    vec2d_t point_a = {x0, y0};
-    vec2d_t point_b = {x1, y1};
-    vec2d_t point_c = {x2, y2};
+    // Create vector points and texture coords after we sort the vertices
+    vec4d_t point_a = { x0, y0, z0, w0 };
+    vec4d_t point_b = { x1, y1, z1, w1 };
+    vec4d_t point_c = { x2, y2, z2, w2 };
+    tex2_t a_uv = { u0, v0 };
+    tex2_t b_uv = { u1, v1 };
+    tex2_t c_uv = { u2, v2 };
 
-    float inv_slope_left = 0;
-    float inv_slope_right = 0;
+    ///////////////////////////////////////////////////////
+    // Render the upper part of the triangle (flat-bottom)
+    ///////////////////////////////////////////////////////
+    float inv_slope_1 = 0;
+    float inv_slope_2 = 0;
 
-    inv_slope_left = (float)(x1 - x0) / ( (y1 - y0) != 0 ? abs(y1 - y0) : 1);
-    inv_slope_right = (float)(x2 - x0) / ( (y1 - y0) != 0 ? abs(y2 - y0) : 1);
+    if (y1 - y0 != 0) inv_slope_1 = (float)(x1 - x0) / abs(y1 - y0);
+    if (y2 - y0 != 0) inv_slope_2 = (float)(x2 - x0) / abs(y2 - y0);
 
-    if (y1 - y0 != 0)
-    {
-        for (int y = y0; y <= y1; y++)
-        {
-            int x_start = x1 + (y - y1) * inv_slope_left;
-            int x_end = x0 + (y - y0) * inv_slope_right;
-            
-            if (x_end < x_start)
-                swap_int(&x_start, &x_end);
+    if (y1 - y0 != 0) {
+        for (int y = y0; y <= y1; y++) {
+            int x_start = x1 + (y - y1) * inv_slope_1;
+            int x_end = x0 + (y - y0) * inv_slope_2;
 
-            for (int x = x_start; x < x_end; x++)
-            {
-                draw_texel(x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
-                //draw_pixel(x, y , ((y % 2 && x % 2) ? 0xFF9933FF :0xFF7711DD));
+            if (x_end < x_start) {
+                swap_int(&x_start, &x_end); // swap if x_start is to the right of x_end
+            }
+
+            for (int x = x_start; x < x_end; x++) {
+                // Draw our pixel with the color that comes from the texture
+                draw_texel(x, y, texture, point_a, point_b, point_c, a_uv, b_uv, c_uv);
             }
         }
-
     }
 
-    inv_slope_left = (float)(x2 - x1) / ((y2 - y1) != 0 ? abs(y2 - y1) : 1);
-    inv_slope_right = (float)(x2 - x0) / ((y2 - y0) != 0 ? abs(y2 - y0) : 1);
+    ///////////////////////////////////////////////////////
+    // Render the bottom part of the triangle (flat-top)
+    ///////////////////////////////////////////////////////
+    inv_slope_1 = 0;
+    inv_slope_2 = 0;
 
-    if (y2 - y1)
-    {
-        for (int y = y1; y <= y2; y++)
-        {
-            int x_start = x1 + (y - y1) * inv_slope_left;
-            int x_end = x0 + (y - y0) * inv_slope_right;
+    if (y2 - y1 != 0) inv_slope_1 = (float)(x2 - x1) / abs(y2 - y1);
+    if (y2 - y0 != 0) inv_slope_2 = (float)(x2 - x0) / abs(y2 - y0);
 
-            if (x_end < x_start)
-                swap_int(&x_start, &x_end);
-            for (int x = x_start; x < x_end; x++)
-            {
-                draw_texel(x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
-                //draw_pixel(x, y, ((y % 2 && x % 2) ? 0xFF77FF44 : 0xBB33CC00));
+    if (y2 - y1 != 0) {
+        for (int y = y1; y <= y2; y++) {
+            int x_start = x1 + (y - y1) * inv_slope_1;
+            int x_end = x0 + (y - y0) * inv_slope_2;
+
+            if (x_end < x_start) {
+                swap_int(&x_start, &x_end); // swap if x_start is to the right of x_end
+            }
+
+            for (int x = x_start; x < x_end; x++) {
+                // Draw our pixel with the color that comes from the texture
+                draw_texel(x, y, texture, point_a, point_b, point_c, a_uv, b_uv, c_uv);
             }
         }
     }
 }
+
 
 
 void    draw_rect(int x, int y, int width, int height, uint32_t color)
@@ -270,13 +316,22 @@ void    render_color_buffer(void)
 
 void    clear_color_buffer(uint32_t color)
 {
-	for (int q = 0; q < (win_width * win_height); q++)
+	for(int q = 0; q < (win_width * win_height); q++)
 		color_buffer[q] = color;
+}
+
+void    clear_z_buf(void)
+{
+    if(!z_buf)
+        return ;
+    for(int q = 0; q < (win_width * win_height); q++)
+        z_buf[q] = 1.0;
 }
 
 void    set_me_free(void)
 {
     free(color_buffer);
+    free(z_buf);
     array_free(mesh.faces);
     array_free(mesh.vertices);
     SDL_DestroyRenderer(game_render);

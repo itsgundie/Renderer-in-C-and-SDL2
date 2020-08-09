@@ -21,6 +21,7 @@ void    setup(void)
 	cull_method_e = CULL_BACKFACE;
 
 	color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * win_width * win_height);
+	z_buf = (float*)malloc(sizeof(float) * win_width * win_height);
 	color_buffer_texture = SDL_CreateTexture(
 							game_render, 
 							SDL_PIXELFORMAT_RGBA8888,
@@ -43,8 +44,8 @@ void    setup(void)
 	mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
 	texture_width = texture_height = 64;
 	// printf("Length A - %f and B - %f\n", a_length, b_length);
-	load_cube_mesh();
-	// load_obj_file_data(MODEL_OBJ);
+	//load_cube_mesh();
+	load_obj_file_data(MODEL_OBJ);
 
 }
 
@@ -262,10 +263,18 @@ void    update(void)
 
 			projected_triangle.points[0].x = projected_points[0].x;
 			projected_triangle.points[0].y = projected_points[0].y;
+			projected_triangle.points[0].z = projected_points[0].z;
+			projected_triangle.points[0].w = projected_points[0].w;
+			
 			projected_triangle.points[1].x = projected_points[1].x;
 			projected_triangle.points[1].y = projected_points[1].y;
+			projected_triangle.points[1].z = projected_points[1].z;
+			projected_triangle.points[1].w = projected_points[1].w;
+			
 			projected_triangle.points[2].x = projected_points[2].x;
 			projected_triangle.points[2].y = projected_points[2].y;
+			projected_triangle.points[2].z = projected_points[2].z;
+			projected_triangle.points[2].w = projected_points[2].w;
 
 			projected_triangle.tex_coords[0].u = this_face.a_uv.u;
 			projected_triangle.tex_coords[0].v = this_face.a_uv.v;
@@ -297,6 +306,7 @@ void    update(void)
 
 void    render(void)
 {
+	//printf("Start render\n");
 	SDL_RenderClear(game_render);
 	draw_grid();
 	// printf("Render mode - %d\n", render_method_e);
@@ -320,9 +330,9 @@ void    render(void)
 		if (render_method_e == RENDER_TEXTURED_WIRED || render_method_e == RENDER_TEXTURED)
 		{
 			draw_triangle_textured(
-				triangle.points[0].x, triangle.points[0].y, triangle.tex_coords[0].u, triangle.tex_coords[0].v,
-				triangle.points[1].x, triangle.points[1].y, triangle.tex_coords[1].u, triangle.tex_coords[1].v,
-				triangle.points[2].x, triangle.points[2].y, triangle.tex_coords[2].u, triangle.tex_coords[2].v,
+				triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.tex_coords[0].u, triangle.tex_coords[0].v,
+				triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.tex_coords[1].u, triangle.tex_coords[1].v,
+				triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.tex_coords[2].u, triangle.tex_coords[2].v,
 				mesh_texture);
 		}
 
@@ -353,7 +363,9 @@ void    render(void)
 	array_free(triangles_to_render);
 	render_color_buffer();
 	clear_color_buffer(COLOR_BLACK);
+	clear_z_buf();
 	SDL_RenderPresent(game_render);
+	//printf("End render\n");
 }
 
 int     main(void)
